@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Собери YungSnitchy!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            background: #f0f8ff;
+            overflow-x: hidden;
+            transition: background 0.5s ease;
+        }
+        #game-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            position: relative;
+            overflow: visible;
+        }
+        #game {
+            width: 100%;
+            height: 60vh;
+            max-width: 400px;
+            max-height: 500px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: #e6f7ff;
+            border: 2px solid #2c3e50;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        #start-button {
+            padding: 15px 30px;
+            font-size: 24px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+        #start-button:active {
+            transform: scale(0.95);
+            background: #27ae60;
+        }
+        #background-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        /* Остальные стили остаются такими же */
+        .esc-text {
+            position: absolute;
+            color: black;
+            font-size: 28px;
+            font-weight: bold;
+            transform: rotate(-15deg);
+            opacity: 0.1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        #basket {
+            width: 20vw;
+            height: 12vw;
+            max-width: 100px;
+            max-height: 70px;
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-image: url('basket.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            transition: left 0.1s ease-out;
+            will-change: transform;
+            z-index: 2;
+        }
+        .yungsnitchy {
+            width: 8vw;
+            height: 8vw;
+            max-width: 40px;
+            max-height: 40px;
+            position: absolute;
+            background-image: url('snitch.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            color: transparent;
+            transition: all 0.3s ease-out;
+            will-change: transform;
+            z-index: 1;
+        }
+        .shrink {
+            animation: shrink 0.4s ease-out forwards;
+        }
+        @keyframes shrink {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        .evaporate {
+            position: absolute;
+            animation: evaporate 0.8s ease-out forwards;
+            z-index: 3;
+        }
+        @keyframes evaporate {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateY(-30px) scale(1.2); opacity: 0.8; }
+            100% { transform: translateY(-60px) scale(0); opacity: 0; }
+        }
+        h1 {
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 10px 0;
+            position: relative;
+            z-index: 1;
+        }
+        #score {
+            font-size: 5vw;
+            margin: 10px 0;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        #controls {
+            display: flex;
+            justify-content: center;
+            gap: 20vw;
+            margin: 15px 0;
+            touch-action: manipulation;
+            position: relative;
+            z-index: 1;
+        }
+        .touch-btn {
+            width: 15vw;
+            height: 15vw;
+            max-width: 70px;
+            max-height: 70px;
+            background: rgba(52, 152, 219, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 8vw;
+            color: white;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .touch-btn:active {
+            transform: scale(0.95);
+            background-color: rgba(41, 128, 185, 0.7);
+        }
+        #music-btn {
+            background: rgba(46, 204, 113, 0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin: 10px auto;
+            display: inline-block;
+            font-size: 4vw;
+            transition: all 0.2s ease;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+        #music-btn:active {
+            transform: scale(0.98);
+        }
+        p {
+            font-size: 3.5vw;
+            color: #2c3e50;
+            margin: 5px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .fullscreen-message {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: white;
+            font-size: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            text-align: center;
+        }
+        .fullscreen-message.show {
+            opacity: 1;
+        }
+        .esc-message {
+            font-size: 72px;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        .april-message {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .tg-message {
+            font-size: 48px;
+            font-weight: 900;
+            color: #ff5722;
+        }
+        @media (min-width: 768px) {
+            #controls {
+                display: none;
+            }
+            #music-btn {
+                font-size: 16px;
+            }
+            p {
+                font-size: 14px;
+            }
+        }
+    </style>
+    
+    <!-- Аудио элементы -->
+    <audio id="bg-music" loop>
+        <source src="YO45.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="catch-sound">
+        <source src="Tag.mp3" type="audio/mpeg">
+    </audio>
+</head>
+<body>
+    <div id="start-screen">
+        <h1>Собери YungSnitchy! 🎤</h1>
+        <button id="start-button">СТАРТ</button>
+    </div>
+
+    <div id="game-container">
+        <h1>Собери YungSnitchy! 🎤</h1>
+        <div id="score">Счёт: 0</div>
+        <button id="music-btn">🔇 Включить музыку</button>
+        <div id="game">
+            <div id="background-text"></div>
+            <div id="basket"></div>
+        </div>
+        <div id="controls">
+            <div class="touch-btn" id="left-btn">←</div>
+            <div class="touch-btn" id="right-btn">→</div>
+        </div>
+        <p>Управление: ← → или свайп</p>
+    </div>
+
+    <div id="esc-message" class="fullscreen-message">
+        <div class="esc-message">ESC</div>
+    </div>
+    <div id="april-message" class="fullscreen-message">
+        <div class="april-message">С первым апреля!</div>
+        <div class="tg-message">TG:BIGIWAY</div>
+    </div>
+
+    <script>
+        // Элементы игры
+        const game = document.getElementById("game");
+        const backgroundText = document.getElementById("background-text");
+        const basket = document.getElementById("basket");
+        const scoreDisplay = document.getElementById("score");
+        const leftBtn = document.getElementById("left-btn");
+        const rightBtn = document.getElementById("right-btn");
+        const musicBtn = document.getElementById("music-btn");
+        const bgMusic = document.getElementById("bg-music");
+        const catchSound = document.getElementById("catch-sound");
+        const escMessage = document.getElementById("esc-message");
+        const aprilMessage = document.getElementById("april-message");
+        const startScreen = document.getElementById("start-screen");
+        const startButton = document.getElementById("start-button");
+        
+        // Показываем стартовый экран сначала
+        document.getElementById("game-container").style.display = "none";
+        
+        // Обработчик кнопки старта
+        startButton.addEventListener("click", startGame);
+        startButton.addEventListener("touchstart", startGame);
+        
+        function startGame() {
+            startScreen.style.display = "none";
+            document.getElementById("game-container").style.display = "block";
+            createBackgroundText();
+            updateGameSize();
+            
+            // Активация аудио при старте игры
+            bgMusic.volume = 0.3;
+            bgMusic.play().catch(e => console.log("Автовоспроизведение заблокировано"));
+            isMusicOn = true;
+            musicBtn.textContent = "🔊 Выключить музыку";
+        }
+
+        // Создание фоновых надписей ESC
+        function createBackgroundText() {
+            const gameRect = game.getBoundingClientRect();
+            const width = gameRect.width;
+            const height = gameRect.height;
+            
+            for (let i = 0; i < 40; i++) {
+                const esc = document.createElement("div");
+                esc.className = "esc-text";
+                esc.textContent = "ESC";
+                esc.style.left = `${Math.random() * width}px`;
+                esc.style.top = `${Math.random() * height}px`;
+                esc.style.fontSize = `${Math.random() * 25 + 20}px`;
+                esc.style.transform = `rotate(${Math.random() * 60 - 30}deg)`;
+                backgroundText.appendChild(esc);
+            }
+        }
+
+        // Настройки
+        let score = 0;
+        let basketPos = 50;
+        let gameSpeed = 3;
+        let isGameRunning = false; // Изначально игра не запущена
+        let touchStartX = null;
+        let moveInterval = null;
+        let isMusicOn = false;
+        let originalVolume = 0.3;
+
+        // Размеры игры
+        let gameWidth, gameHeight;
+        function updateGameSize() {
+            const rect = game.getBoundingClientRect();
+            gameWidth = rect.width;
+            gameHeight = rect.height;
+        }
+        window.addEventListener('resize', updateGameSize);
+
+        // ===== Управление музыкой =====
+        musicBtn.addEventListener("click", () => {
+            if (isMusicOn) {
+                bgMusic.pause();
+                musicBtn.textContent = "🔇 Включить музыку";
+            } else {
+                bgMusic.volume = originalVolume;
+                bgMusic.play().catch(e => console.log("Автовоспроизведение заблокировано"));
+                musicBtn.textContent = "🔊 Выключить музыку";
+            }
+            isMusicOn = !isMusicOn;
+        });
+
+        // ===== Управление корзиной =====
+        // 1. Клавиатура
+        document.addEventListener('keydown', (e) => {
+            if (!isGameRunning) return;
+            if (e.key === 'ArrowLeft') moveBasket(-25);
+            if (e.key === 'ArrowRight') moveBasket(25);
+        });
+
+        // 2. Сенсорные кнопки
+        leftBtn.addEventListener('touchstart', () => {
+            if (isGameRunning) moveBasket(-12, true);
+        });
+        rightBtn.addEventListener('touchstart', () => {
+            if (isGameRunning) moveBasket(12, true);
+        });
+        leftBtn.addEventListener('touchend', stopMove);
+        rightBtn.addEventListener('touchend', stopMove);
+
+        // 3. Свайпы
+        game.addEventListener('touchstart', (e) => {
+            if (!isGameRunning) return;
+            touchStartX = e.touches[0].clientX;
+        });
+        game.addEventListener('touchmove', (e) => {
+            if (!isGameRunning || !touchStartX) return;
+            const touchX = e.touches[0].clientX;
+            const diff = touchX - touchStartX;
+            moveBasket(diff * 0.8);
+            touchStartX = touchX;
+        });
+        game.addEventListener('touchend', () => {
+            touchStartX = null;
+        });
+
+        // Функции движения
+        function moveBasket(speed, isButton = false) {
+            if (!isGameRunning) return;
+            
+            clearInterval(moveInterval);
+            if (isButton) {
+                moveInterval = setInterval(() => {
+                    basketPos += speed;
+                    updateBasketPosition();
+                }, 10);
+            } else {
+                basketPos += speed;
+                updateBasketPosition();
+            }
+        }
+        function stopMove() {
+            clearInterval(moveInterval);
+        }
+        function updateBasketPosition() {
+            const basketWidth = basket.offsetWidth;
+            const pos = basketPos;
+            basket.style.left = `${pos}px`;
+        }
+
+        // ===== Логика игры =====
+        function createYungSnitchy() {
+            if (!isGameRunning) return;
+            
+            const yung = document.createElement("div");
+            yung.className = "yungsnitchy";
+            yung.textContent = "YS";
+            yung.style.left = `${Math.random() * 85 + 5}%`;
+            yung.style.top = "0px";
+            game.appendChild(yung);
+
+            let yungY = 0;
+            const fall = setInterval(() => {
+                if (!isGameRunning) {
+                    clearInterval(fall);
+                    return;
+                }
+                
+                yungY += gameSpeed;
+                yung.style.transform = `translateY(${yungY}px)`;
+                
+                // Проверка столкновения
+                const yungRect = yung.getBoundingClientRect();
+                const basketRect = basket.getBoundingClientRect();
+                
+                if (
+                    yungY >= gameHeight - basketRect.height - 15 &&
+                    yungRect.right > basketRect.left &&
+                    yungRect.left < basketRect.right
+                ) {
+                    clearInterval(fall);
+                    
+                    // Создаем копию для анимации у корзины
+                    const clone = yung.cloneNode();
+                    clone.style.position = 'absolute';
+                    clone.style.left = `${basketRect.left - game.getBoundingClientRect().left}px`;
+                    clone.style.top = `${basketRect.top - game.getBoundingClientRect().top}px`;
+                    clone.classList.add("evaporate");
+                    game.appendChild(clone);
+                    
+                    // Удаляем оригинал и клон после анимации
+                    setTimeout(() => {
+                        clone.remove();
+                    }, 800);
+                    yung.remove();
+                    
+                    score++;
+                    scoreDisplay.textContent = `Счёт: ${score}`;
+                    
+                    playCatchSound();
+                    
+                    // Проверка на 50 очков
+                    if (score === 50) {
+                        triggerAprilFoolsEffect();
+                    }
+                    
+                    // Увеличение сложности
+                    if (score % 5 === 0) gameSpeed += 0.3;
+                } else if (yungY > gameHeight) {
+                    clearInterval(fall);
+                    yung.remove();
+                    // Штраф за промах
+                    if (score > 0) {
+                        score--;
+                        scoreDisplay.textContent = `Счёт: ${score}`;
+                    }
+                }
+            }, 20);
+        }
+
+        // Эффект на 50 очков
+        function triggerAprilFoolsEffect() {
+            isGameRunning = false;
+            
+            // Заглушаем музыку
+            if (isMusicOn) {
+                originalVolume = bgMusic.volume;
+                const fadeOut = setInterval(() => {
+                    if (bgMusic.volume > 0.1) {
+                        bgMusic.volume -= 0.05;
+                    } else {
+                        bgMusic.volume = 0;
+                        clearInterval(fadeOut);
+                    }
+                }, 100);
+            }
+            
+            // Затемнение сайта
+            document.body.style.background = "black";
+            document.querySelectorAll("#game-container > *").forEach(el => {
+                el.style.opacity = "0";
+            });
+            
+            // Через 5 секунд показываем ESC
+            setTimeout(() => {
+                escMessage.classList.add("show");
+                
+                // Через 15 секунд убираем ESC и показываем поздравление
+                setTimeout(() => {
+                    escMessage.classList.remove("show");
+                    
+                    setTimeout(() => {
+                        aprilMessage.classList.add("show");
+                        
+                        // Игра останавливается навсегда
+                    }, 500);
+                }, 15000);
+            }, 5000);
+        }
+
+        // Воспроизведение звука при сборе
+        function playCatchSound() {
+            catchSound.currentTime = 0;
+            catchSound.volume = 0.5;
+            catchSound.play().catch(e => console.log("Ошибка воспроизведения звука"));
+        }
+
+        // Запуск игры после старта
+        function startGame() {
+            isGameRunning = true;
+            startScreen.style.display = "none";
+            document.getElementById("game-container").style.display = "block";
+            updateGameSize();
+            createBackgroundText();
+            
+            // Запускаем генерацию YungSnitchy
+            setInterval(createYungSnitchy, 1500);
+            
+            // Активируем музыку
+            if (!isMusicOn) {
+                bgMusic.volume = 0.3;
+                bgMusic.play().catch(e => console.log("Автовоспроизведение заблокировано"));
+                isMusicOn = true;
+                musicBtn.textContent = "🔊 Выключить музыку";
+            }
+        }
+
+        // Блокировка скролла
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.classList.contains('touch-btn') || e.target === game) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>
